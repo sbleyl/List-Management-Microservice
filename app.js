@@ -1,97 +1,79 @@
 // ########## SETUP
-
-// Express for API routes and calls
 const express = require('express');
 const app = express();
+
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static('frontend')); // serves your frontend folder
 
 const PORT = 3000;
 
-// In-memory storage for lists
+// In-memory storage
 let lists = [];
 let nextId = 1;
-let nextItemId = 1;
 
 // ########## ROUTES
 
-// Home Page
-app.get('/lists', (req, res) => {
-    res.sendFile(__dirname + '/frontend/lists.html');
-});
-
-// API to get all lists as JSON
+// Get all lists
 app.get('/api/lists', (req, res) => {
     res.json(lists);
 });
 
-// Create a new packing list
-app.post('/lists', (req, res) => {
+// Create list
+app.post('/api/lists', (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: 'Name required' });
 
     const newList = { id: nextId++, name, items: [] };
     lists.push(newList);
-    res.json(lists);
-});
-
-// Get all items for a list
-app.get('/lists/:listId/items', (req, res) => {
-    const listId = parseInt(req.params.listId);
-    const list = lists.find(l => l.id === listId);
-
-    if (!list) return res.status(404).json({ error: 'List not found' });
-
-    res.json(list.items);
+    res.status(201).json(newList);
 });
 
 // Add item to list
-app.post('/lists/:listId/items', (req, res) => {
-    const listId = parseInt(req.params.listId);
-    const { name } = req.body;
-
-    const list = lists.find(l => l.id === listId);
+app.post('/api/lists/:id/items', (req, res) => {
+    const list = lists.find(l => l.id == req.params.id);
     if (!list) return res.status(404).json({ error: 'List not found' });
+
+    const { name } = req.body;
     if (!name) return res.status(400).json({ error: 'Item name required' });
 
-    const newItem = { id: nextItemId++, name, completed: false };
-    list.items.push(newItem);
+    const item = { name, packed: false };
+    list.items.push(item);
 
-    res.json(list.items);
+    res.status(201).json(item);
 });
 
-// Update item status
-app.put('/lists/:listId/items/:itemId', (req, res) => {
-    const listId = parseInt(req.params.listId);
-    const itemId = parseInt(req.params.itemId);
-    const { completed } = req.body;
-
-    const list = lists.find(l => l.id === listId);
+// Toggle item packed
+app.put('/api/lists/:id/items/:index', (req, res) => {
+    const list = lists.find(l => l.id == req.params.id);
     if (!list) return res.status(404).json({ error: 'List not found' });
 
-    const item = list.items.find(i => i.id === itemId);
+    const item = list.items[req.params.index];
     if (!item) return res.status(404).json({ error: 'Item not found' });
 
-    item.completed = completed;
+    item.packed = !item.packed;
     res.json(item);
 });
 
-// Delete item
-app.delete('/lists/:listId/items/:itemId', (req, res) => {
-    const listId = parseInt(req.params.listId);
-    const itemId = parseInt(req.params.itemId);
+// Delete list
+app.delete('/api/lists/:id', (req, res) => {
+    const index = lists.findIndex(l => l.id == req.params.id);
+    if (index === -1) return res.status(404).json({ error: 'List not found' });
 
-    const list = lists.find(l => l.id === listId);
-    if (!list) return res.status(404).json({ error: 'List not found' });
-
-    list.items = list.items.filter(i => i.id !== itemId);
-    res.json(list.items);
+    lists.splice(index, 1);
+    res.json({ success: true });
 });
 
-// ########## LISTENER
+// Delete item
+app.delete('/api/lists/:id/items/:index', (req, res) => {
+    const list = lists.find(l => l.id == req.params.id);
+    if (!list) return res.status(404).json({ error: 'List not found' });
 
-// Start server
+    const item = list.items.splice(req.params.index, 1);
+    if (!item.length) return res.status(404).json({ error: 'Item not found' });
+
+    res.json({ success: true });
+});
+
+// ########## START
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`List microservice running at http://localhost:${PORT}`);
 });
