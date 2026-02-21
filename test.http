@@ -1,0 +1,79 @@
+# Create a list
+POST http://localhost:3000/api/lists
+Content-Type: application/json
+
+{
+    "list_name": "Demo List 1"
+}
+
+###
+# Create a second list
+POST http://localhost:3000/api/lists
+Content-Type: application/json
+
+{
+    "list_name": "Demo List 2"
+}
+
+###
+# Get all the lists
+GET http://localhost:3000/api/lists
+
+###
+# Add item to list 1
+POST http://localhost:3000/api/lists/1/items
+Content-Type: application/json
+
+{
+    "item_name": "Shampoo"
+}
+
+###
+# Add item to list 2
+POST http://localhost:3000/api/lists/2/items
+Content-Type: application/json
+
+{
+    "item_name": "Bathing Suit"
+}
+
+###
+# Add item to list 1
+POST http://localhost:3000/api/lists/1/items
+Content-Type: application/json
+
+{
+    "item_name": "Phone Charger"
+}
+
+###
+# Add item to list 2
+POST http://localhost:3000/api/lists/2/items
+Content-Type: application/json
+
+{
+    "item_name": "Book"
+}
+
+
+###
+# Update item status
+PUT http://localhost:3000/api/lists/1/items/1
+Content-Type: application/json
+
+###
+# Update nonexistent item status
+PUT http://localhost:3000/api/lists/2/items/12
+Content-Type: application/json
+
+###
+# Read all items
+GET http://localhost:3000/api/lists/1/items
+
+###
+# Delete item
+DELETE http://localhost:3000/api/lists/1/items/3
+
+###
+# Delete list
+DELETE http://localhost:3000/api/lists/1
