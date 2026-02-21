@@ -1,10 +1,10 @@
+require('dotenv').config()
+
 // ########## SETUP
 const express = require('express');
 const app = express();
 
 app.use(express.json());
-
-const PORT = 3000;
 
 // In-memory storage
 let lists = [];
@@ -43,13 +43,13 @@ app.post('/api/lists/:id/items', (req, res) => {
     const { item_name } = req.body;
     if (!item_name) return res.status(400).json({ error: 'Item name required' });
 
-    const item = { id: nextItemId++, item_name, packed: false };
+    const item = { id: nextItemId++, item_name, completed: false };
     list.items.push(item);
 
     res.status(201).json(item);
 });
 
-// Toggle item packed
+// Toggle item completed
 app.put('/api/lists/:id/items/:itemId', (req, res) => {
     const list = lists.find(l => l.id == req.params.id);
     if (!list) return res.status(404).json({ error: 'List not found' });
@@ -57,7 +57,7 @@ app.put('/api/lists/:id/items/:itemId', (req, res) => {
     const item = list.items.find(i => i.id == req.params.itemId);
     if (!item) return res.status(404).json({ error: 'Item not found' });
 
-    item.packed = !item.packed;
+    item.completed = !item.completed;
     res.json(item);
 });
 
@@ -83,6 +83,6 @@ app.delete('/api/lists/:id/items/:itemId', (req, res) => {
 });
 
 // ########## START
-app.listen(PORT, () => {
-    console.log(`List microservice running at http://localhost:${PORT}`);
+app.listen(process.env.PORT, () => {
+    console.log(`List microservice running at http://localhost:${process.env.PORT}`);
 });

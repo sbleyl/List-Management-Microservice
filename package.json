@@ -1,5 +1,18 @@
 {
+  "name": "listmanger",
+  "version": "1.0.0",
+  "description": "Create lists of items that can be marked as complete.",
+  "author": "Sean Bleyl, Valerie Armstrong",
+  "type": "commonjs",
+  "scripts": {
+    "devStart": "nodemon app.js",
+    "start": "node app.js"
+  },
   "dependencies": {
+    "dotenv": "^17.3.1",
     "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.13"
   }
 }
