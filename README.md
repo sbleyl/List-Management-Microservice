@@ -17,7 +17,7 @@ You should get a notice that the app is running in port 3000. If this conflicts 
 
 ## Requesting and Receiving Data
 
-You can send and receive data from this microservice using HTTP. For all requesnts and responses with a body, data will be sent as json. We're including only the relevant portions of HTTP requests and responses here. If you want to learn more about HTTP requests and responses, check out ["Anatomy of an HTTP message" from MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Messages).
+You can send and receive data from this microservice using HTTP. For all requesnts and responses with a body, data will be sent as JSON. We're including only the relevant portions of HTTP requests and responses here. If you want to learn more about HTTP requests and responses, check out ["Anatomy of an HTTP message" from MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Messages).
 
 If you're programming in JS, you can use the Fetch API to send HTTP requests. To learn more, check out ["Using the Fetch API from MDN"](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
 
@@ -56,12 +56,31 @@ If you're using Python, check out ["Requests: HTTP for Humans"](https://docs.pyt
 | Add an Item to a list  | POST         | /api/lists/:id/items *         | Content-type: json  | { "item_name": "All my stuff to do" }      |
 | Toggle item completion | PUT          | /api/lists/:id/items/:itemId * |                     |                                            | 
 | View all lists         | GET          | /api/lists                     |                     |                                            |
-| View all items on a list | GET        | /api/lists/:id/items           |                     |                                            |
+| View one list          | GET          | /api/lists/:id/items           |                     |                                            |
 | Delete a List          | DELETE       | /api/lists/:id                 |                     |                                            |
 | Delete an item from a list | DELETE   | /api/lists/:id/items/:itemId * |                     |                                            |
 
 * *Note that the URL includes the id of the list where the item should be added
 
+### Expected Responses
+
+| Task                   | Result              | Status Code  | Response body, if any                               |
+| ---------------------- | ------------------- | ------------ | --------------------------------------------------- |
+| Create new list        | Success             | 201          | { id: list_id, list_name: "list name", items: [] }  |
+| Create new list        | Failure             | 400 /500     | { error: 'Error message' }                          |
+| Add an Item to a list  | Success             | 201          | { id: item_id, item_name: "item name", completed: false } |
+| Add an Item to a list  | Failure             | 400 / 404 /500 | { error: 'Error message' }                        |
+| Toggle item completion | Success             | 200          | { id: item_id, item_name: "item name", completed: bool } |
+| Toggle item completion | Failure             | 404 / 500    | { error: 'Error message' }                          |
+| View all lists         | Success             | 200          | { all: [ {id:..., list_name:..., items: []}, ... {id: ...} ] }    |
+| View all lists         | Failure             | 500          | { error: 'Error message' }                          |
+| View one list          | Success             | 200          | { id: list_id, list_name: "list name", items: [] }  |
+| View one list          | Failure             | 404          | { error: 'Error message' }                          |
+| Delete a list          | Success             | 204          |                                                     |
+| Delete a list          | Failure             | 404 / 500    | { error: 'Error message' }                          |
+| Delete an item from a list | Success         | 204          |                                                     |
+| Delete an item from a list | Failure         | 404 / 500    | { error: 'Error message' }                          |
+
 ## UML Sequence Diagram
 
-
+![UML Diagram of List Manager Microservice](UML-diagram.png)
