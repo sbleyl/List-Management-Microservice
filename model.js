@@ -10,9 +10,10 @@ class List {
 }
 
 class Item {
-    constructor(name, id) {
+    constructor(name, id, type) {
         this.id = id;
         this.item_name = name;
+        this.type = type;
         this.completed = false;
     }
 }
@@ -192,10 +193,10 @@ const getAllLists = async function getAllLists() {
 Returns object with item if item added, otherwise returns object with error messaage
 Return object format: { "error": {"code": code, "message": "error message"} } or { "item": Item{} }
 */
-const addItem = async function addItem(list_id, item_name) {
+const addItem = async function addItem(list_id, item_name, type) {
     //generate unique id and create item
     const new_id = await getNewId();
-    const new_item = new Item(item_name, new_id);
+    const new_item = new Item(item_name, new_id, type);
 
     //open the list
     const file_name = process.env.LISTS_FILE_PATH + list_id + '.json'

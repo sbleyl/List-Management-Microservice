@@ -38,16 +38,15 @@ app.post('/api/lists', async (req, res) => {
 
 // Add item to list
 app.post('/api/lists/:id/items', async (req, res) => {
-    const { item_name } = req.body;
+    const { item_name, type } = req.body;
     if (!item_name) return res.status(400).json({ error: 'Item name required' });
 
-    result = await model.addItem(req.params.id, item_name);
+    result = await model.addItem(req.params.id, item_name, type);
 
     if (Object.hasOwn(result, 'item')) {
         return res.status(201).json(result.item);
     }
     res.status(result.error.code).json({ error: result.error.message })
-    
 });
 
 // Toggle item completed
