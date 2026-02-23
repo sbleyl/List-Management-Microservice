@@ -1,4 +1,6 @@
 require('dotenv').config()
+const model = require('./model');
+
 
 // ########## SETUP
 const express = require('express');
@@ -6,80 +8,85 @@ const app = express();
 
 app.use(express.json());
 
-// In-memory storage
-let lists = [];
-let nextId = 1;
-let nextItemId = 1;
-
 // ########## ROUTES
 
 // Get all lists
-app.get('/api/lists', (req, res) => {
-    res.json(lists);
+app.get('/api/lists', async (req, res) => {
+    const lists = await model.getAllLists();
+    if (lists === null) {
+        return res.status(500).json( { error: 'Internal server error' })
+    }
+    res.status(200).json(lists);
 });
 
 // Get all items in a list
-app.get('/api/lists/:id/items', (req, res) => {
-    const list = lists.find(l => l.id == req.params.id);
+app.get('/api/lists/:id/items', async (req, res) => {
+    const list = await model.viewList(req.params.id);
     if (!list) return res.status(404).json({ error: 'List not found' });
-    res.json(list.items);
+    res.status(200).type('application/json').send(list);
 });
 
 // Create list
-app.post('/api/lists', (req, res) => {
+app.post('/api/lists', async (req, res) => {
     const { list_name } = req.body;
     if (!list_name) return res.status(400).json({ error: 'Name required' });
 
-    const newList = { id: nextId++, list_name, items: [] };
-    lists.push(newList);
-    res.status(201).json(newList);
+    const list = await model.createList(list_name);
+    if (!list) return res.status(500).type('application/json').send({ "error": "Unable to create list"});
+    res.status(201).type('application/json').send(list);
 });
 
 // Add item to list
-app.post('/api/lists/:id/items', (req, res) => {
-    const list = lists.find(l => l.id == req.params.id);
-    if (!list) return res.status(404).json({ error: 'List not found' });
-
-    const { item_name } = req.body;
+app.post('/api/lists/:id/items', async (req, res) => {
+    const { item_name, type } = req.body;
     if (!item_name) return res.status(400).json({ error: 'Item name required' });
 
-    const item = { id: nextItemId++, item_name, completed: false };
-    list.items.push(item);
+    result = await model.addItem(req.params.id, item_name, type);
 
-    res.status(201).json(item);
+    if (Object.hasOwn(result, 'item')) {
+        return res.status(201).json(result.item);
+    }
+    res.status(result.error.code).json({ error: result.error.message })
 });
 
 // Toggle item completed
-app.put('/api/lists/:id/items/:itemId', (req, res) => {
-    const list = lists.find(l => l.id == req.params.id);
-    if (!list) return res.status(404).json({ error: 'List not found' });
+app.put('/api/lists/:id/items/:itemId', async (req, res) => {
 
-    const item = list.items.find(i => i.id == req.params.itemId);
-    if (!item) return res.status(404).json({ error: 'Item not found' });
+    const result = await model.toggleCompleted(req.params.id, req.params.itemId)
 
-    item.completed = !item.completed;
-    res.json(item);
+    if (Object.hasOwn(result, 'item')) {
+        return res.status(200).type('application/json').send(result.item);
+    }
+
+    return res.status(result.error.code).json({ error: result.error.message });
+
 });
 
 // Delete list
-app.delete('/api/lists/:id', (req, res) => {
-    const index = lists.findIndex(l => l.id == req.params.id);
-    if (index === -1) return res.status(404).json({ error: 'List not found' });
-
-    lists.splice(index, 1);
-    res.json({ success: true });
+app.delete('/api/lists/:id', async (req, res) => {
+    const error = await model.deleteList(Number(req.params.id));
+    if (error === null) {
+        return res.status(204).send()
+    } else if (error === 404) {
+        return res.status(404).json({ error: "List not found."})
+    };
+    res.status(500).json({ error: "Unable to delete: Server error."})
 });
 
 // Delete item
-app.delete('/api/lists/:id/items/:itemId', (req, res) => {
-    const list = lists.find(l => l.id == req.params.id);
-    if (!list) return res.status(404).json({ error: 'List not found' });
-    
-    const index = list.items.findIndex(i => i.id == req.params.itemId);
-    if (index === -1) return res.status(404).json({ error: 'Item not found' });
+app.delete('/api/lists/:id/items/:itemId', async (req, res) => {
+    const result = await model.deleteItem(req.params.id, req.params.itemId);
 
-    list.items.splice(index, 1);
-    res.json({ success: true });
+    if (Object.hasOwn(result, "success")) {
+        return res.status(204).send();
+    }
+
+    if (Object.hasOwn(result, "error")) {
+        return res.status(result.error.code).json( {error: result.error.message} );
+    }
+
+    return res.status(500).json( { error: "Internal server error" } )
+
 });
 
 // ########## START

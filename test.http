@@ -55,25 +55,21 @@ Content-Type: application/json
     "item_name": "Book"
 }
 
-
 ###
 # Update item status
-PUT http://localhost:3000/api/lists/1/items/1
-Content-Type: application/json
+PUT http://localhost:3000/api/lists/1/items/3
+
 
 ###
 # Update nonexistent item status
 PUT http://localhost:3000/api/lists/2/items/12
-Content-Type: application/json
+
 
 ###
-# Read all items
+# Read all items on list 1
 GET http://localhost:3000/api/lists/1/items
 
 ###
-# Delete item
-DELETE http://localhost:3000/api/lists/1/items/3
-
-###
-# Delete list
+# Delete list 1
 DELETE http://localhost:3000/api/lists/1
+
